@@ -109,6 +109,19 @@ for link in links:
             data.append([csvYr, csvMth, url])
     except:
         break
+html = requests.get('https://data.gov.uk/dataset/financial-transactions-data-wsht-nhs-trust', headers=ua)
+soup = BeautifulSoup(html.text, 'lxml')
+blocks = soup.find('div', 'dataset-resources').find_all('div', 'col-sm-6')
+urls_set = set()
+for block in blocks:
+    title = block.find('div', 'inner').find('span', 'inner-cell').text.strip()
+    url = block.find('div', 'inner').find('div', 'inner-cell').find('span').find_next('span').find('a')['href']
+    csvYr = title[:4].strip()
+    csvMth = title.split()[1].strip()[:3]
+    if '013 March' in title:
+        csvYr = '2013'
+    csvMth = convert_mth_strings(csvMth.upper())
+    data.append([csvYr, csvMth, url])
 
 
 #### STORE DATA 1.0
