@@ -38,12 +38,12 @@ def validateFilename(filename):
 
 def validateURL(url):
     try:
-        r = requests.get(url, allow_redirects=True, timeout=20, headers=ua)
+        r = requests.get(url, allow_redirects=True, timeout=20, headers=ua, verify=False)
         count = 1
         while r.status_code == 500 and count < 4:
             print ("Attempt {0} - Status code: {1}. Retrying.".format(count, r.status_code))
             count += 1
-            r = requests.get(url, allow_redirects=True, timeout=20, headers=ua)
+            r = requests.get(url, allow_redirects=True, timeout=20, headers=ua, verify=False)
         sourceFilename = r.headers.get('Content-Disposition')
         if sourceFilename:
             ext = os.path.splitext(sourceFilename)[1].replace('"', '').replace(';', '').replace(' ', '')
@@ -91,7 +91,7 @@ ua = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) G
 
 #### READ HTML 1.2
 
-html = requests.get(url, headers=ua)
+html = requests.get(url, headers=ua, verify=False)
 soup = BeautifulSoup(html.text, 'lxml')
 
 
@@ -109,7 +109,7 @@ for link in links:
             data.append([csvYr, csvMth, url])
     except:
         break
-html = requests.get('https://data.gov.uk/dataset/financial-transactions-data-wsht-nhs-trust', headers=ua)
+html = requests.get('https://data.gov.uk/dataset/financial-transactions-data-wsht-nhs-trust', headers=ua, verify=False)
 soup = BeautifulSoup(html.text, 'lxml')
 blocks = soup.find('div', 'dataset-resources').find_all('div', 'col-sm-6')
 urls_set = set()
