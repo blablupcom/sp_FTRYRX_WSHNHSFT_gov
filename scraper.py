@@ -38,12 +38,12 @@ def validateFilename(filename):
 
 def validateURL(url):
     try:
-        r = requests.get(url, allow_redirects=True, timeout=20, headers=ua, verify=False)
+        r = requests.get(url, allow_redirects=True, timeout=20, headers=ua)
         count = 1
         while r.status_code == 500 and count < 4:
             print ("Attempt {0} - Status code: {1}. Retrying.".format(count, r.status_code))
             count += 1
-            r = requests.get(url, allow_redirects=True, timeout=20, headers=ua, verify=False)
+            r = requests.get(url, allow_redirects=True, timeout=20, headers=ua)
         sourceFilename = r.headers.get('Content-Disposition')
         if sourceFilename:
             ext = os.path.splitext(sourceFilename)[1].replace('"', '').replace(';', '').replace(' ', '')
@@ -66,7 +66,7 @@ def validate(filename, file_url):
         return False
     if not validURL:
         print filename, "*Error: Invalid URL*"
-        print file_url.encode('utf-8')
+        print file_url
         return False
     if not validFiletype:
         print filename, "*Error: Invalid filetype*"
@@ -91,7 +91,7 @@ ua = {'User-Agent': 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) G
 
 #### READ HTML 1.2
 
-html = requests.get(url, headers=ua, verify=False)
+html = requests.get(url, headers=ua)
 soup = BeautifulSoup(html.text, 'lxml')
 
 
@@ -105,19 +105,21 @@ for link in links:
             title = link.text.strip()
             csvMth = title.split('-')[-1].strip()[:3]
             csvYr = title[-4:]
+            if 'Exp' in csvMth:
+                csvMth = title.split()[-2].strip()[:3]
             csvMth = convert_mth_strings(csvMth.upper())
             data.append([csvYr, csvMth, url])
     except:
         break
-html = requests.get('https://data.gov.uk/dataset/financial-transactions-data-wsht-nhs-trust', headers=ua, verify=False)
+html = requests.get('https://data.gov.uk/dataset/financial-transactions-data-wsht-nhs-trust', headers=ua)
 soup = BeautifulSoup(html.text, 'lxml')
 blocks = soup.find('div', 'dataset-resources').find_all('div', 'col-sm-6')
 urls_set = set()
 for block in blocks:
     title = block.find('div', 'inner').find('span', 'inner-cell').text.strip()
     url = block.find('div', 'inner').find('div', 'inner-cell').find('span').find_next('span').find('a')['href']
-    csvYr = title[:4].strip()
-    csvMth = title.split()[1].strip()[:3]
+    csvYr = title.split()[1]
+    csvMth = title.split()[2].strip()[:3]
     if '013 March' in title:
         csvYr = '2013'
     csvMth = convert_mth_strings(csvMth.upper())
